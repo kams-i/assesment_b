@@ -1,4 +1,5 @@
-import { DataTypes, Model, Optional } from 'sequelize';
+import { DataTypes, Model } from 'sequelize';
+import type { Optional } from 'sequelize';
 import bcrypt from 'bcryptjs';
 import { sequelize } from '../config/database.ts';
 
@@ -19,7 +20,7 @@ export interface UserAttributes {
 }
 
 // 2. Attributes optional when calling User.create()
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'otpCode' | 'otpExpiresAt'> {}
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'otpCode' | 'otpExpiresAt'> { }
 
 // 3. Model class definition
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -37,9 +38,15 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     public readonly createdAt!: Date;
     public readonly updatedAt!: Date;
 
-    // Instance method
+    // Instance method to check passwords during login
     public async matchPassword(enteredPassword: string): Promise<boolean> {
         return await bcrypt.compare(enteredPassword, this.password);
+    }
+
+    // Automatically hide password when user model is converted to JSON/sent to client
+public toJSON() {
+        const { password, ...values } = this.get();
+        return values;
     }
 }
 
