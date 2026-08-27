@@ -1,7 +1,7 @@
 import { createClient } from 'redis';
 
 const redisClient = createClient({
-    url: process.env.REDIS_URL || 'rediss://default:gQAAAAAAAZF7AAIgcDEwN2QyNWNjYWU5ZDM0MTEwODc0NWRlZGQ1ZTBiOTJlYg@related-lamprey-102779.upstash.io:6379'
+    url: process.env.REDIS_URL 
 });
 
 redisClient.on('error', (err) => console.error('Redis Client Error:', err));
