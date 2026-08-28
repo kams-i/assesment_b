@@ -24,19 +24,19 @@ export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 
 
 // 3. Model class definition
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-    public id!: number;
-    public username!: string;
-    public email!: string;
-    public firstName!: string;
-    public lastName!: string;
-    public age!: number;
-    public password!: string;
-    public role!: 'admin' | 'user';
-    public otpCode!: string | null;
-    public otpExpiresAt!: Date | null;
+    public declare id: number;
+    public declare username: string;
+    public declare email: string;
+    public declare firstName: string;
+    public declare lastName: string;
+    public declare age: number;
+    public declare password: string;
+    public declare role: 'admin' | 'user';
+    public declare otpCode: string | null;
+    public declare otpExpiresAt: Date | null;
 
-    public readonly createdAt!: Date;
-    public readonly updatedAt!: Date;
+    public declare readonly createdAt: Date;
+    public declare readonly updatedAt: Date;
 
     // Instance method to check passwords during login
     public async matchPassword(enteredPassword: string): Promise<boolean> {
@@ -44,7 +44,7 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     }
 
     // Automatically hide password when user model is converted to JSON/sent to client
-public toJSON() {
+    public toJSON() {
         const { password, ...values } = this.get();
         return values;
     }

@@ -1,5 +1,6 @@
 import type { Request, Response, NextFunction } from 'express';
-import jwt, { Secret } from 'jsonwebtoken';
+import jwt from 'jsonwebtoken';
+import type { Secret } from 'jsonwebtoken';
 import User from '../models/user.ts';
 import { errorResponse } from '../utils/responses.ts';
 import codes from '../utils/statusCodes.ts';
@@ -58,11 +59,13 @@ export const authenticate = async (
 
 export const authorize = (...roles: string[]) => {
     return (req: AuthenticatedRequest, res: Response, next: NextFunction) => {
-        if (!req.user || !roles.includes(req.user.role)) {
+        const userRole = req.user?.get ? req.user.get('role') : req.user?.role;
+
+        if (!req.user || !roles.includes(userRole)) {
             return errorResponse(
                 res, 
                 codes.FORBIDDEN, 
-                `Role ${req.user ? req.user.role : 'unknown'} does not have permission to perform this action.`
+                `Role ${userRole || 'unknown'} does not have permission to perform this action.`
             );
         }
         next();

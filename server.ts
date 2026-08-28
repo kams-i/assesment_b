@@ -6,6 +6,8 @@ import errors from './middleware/errorhandler.ts';
 import logger from './middleware/logger.ts';
 import notFound from './middleware/notFound.ts';
 import userRoute from './routes/userRoute.ts';
+import authRoute from './routes/authRoute.ts';
+import adminRoute from './routes/adminRoute.ts'
 
 dotenv.config();
 const app = express();
@@ -24,6 +26,8 @@ app.get('/', (req, res) => {
 
 // 1. Mount your routers FIRST
 app.use('/api/v4/user', userRoute);
+app.use('/api/v4/auth', authRoute);
+app.use('/api/v4/admin', adminRoute)
 
 // 2. Fallback & Error Handlers MUST go LAST (after all valid routes)
 app.use(notFound);
