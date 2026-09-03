@@ -19,7 +19,7 @@ const port = process.env.PORT || 8000;
 app.use(express.json());
 app.use(logger);
 app.use(cors({
-    origin: 'https://localhost:3000',
+    origin: ['http://localhost:3000', 'https://localhost:3000'],
     credentials: true
 }));
 

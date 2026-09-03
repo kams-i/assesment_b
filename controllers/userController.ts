@@ -8,11 +8,19 @@ import {
     getOneUser,
     updateUser,
     deleteUser,
+    followUser,
+    unfollowUser,
+    getFollowers,      // Changed from getUserFollowers
+    getFollowing,      // Changed from getUserFollowing
 } from '../services/userService.ts';
 
-// Extend Express Request to handle custom middleware data like req.normalizedData
+// Extend Express Request to handle custom middleware data like req.normalizedData or user info
 export interface CustomRequest extends Request {
     normalizedData?: any;
+    user?: {
+        id: number;
+        [key: string]: any;
+    };
 }
 
 export async function createUserController(req: Request, res: Response) {
@@ -150,5 +158,95 @@ export async function createBulkUserController(req: CustomRequest, res: Response
             'Failed to create users. Transaction rolled back.',
             detailedErrors
         );
+    }
+}
+
+// ==========================================
+// FOLLOW & UNFOLLOW CONTROLLERS
+// ==========================================
+
+export async function followUserController(req: CustomRequest, res: Response) {
+    try {
+        const currentUserId = req.user?.id || (req as any).userId;
+        if (!currentUserId) {
+            return errorResponse(res, codes.UNAUTHORIZED || 401, 'Authentication required.');
+        }
+
+        const idParam = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+        const targetUserId = parseInt(idParam, 10);
+
+        if (isNaN(targetUserId)) {
+            return errorResponse(res, codes.BAD_REQUEST, 'A valid target user ID is required.');
+        }
+
+        const success = await followUser(currentUserId, targetUserId);
+        if (!success) {
+            return errorResponse(res, codes.BAD_REQUEST, 'You are already following this user.');
+        }
+
+        return successResponse(res, codes.OK, 'Successfully followed user.');
+    } catch (error: any) {
+        console.error(error);
+        return errorResponse(res, codes.BAD_REQUEST, error.message || 'An error has occurred.');
+    }
+}
+
+export async function unfollowUserController(req: CustomRequest, res: Response) {
+    try {
+        const currentUserId = req.user?.id || (req as any).userId;
+        if (!currentUserId) {
+            return errorResponse(res, codes.UNAUTHORIZED || 401, 'Authentication required.');
+        }
+
+        const idParam = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+        const targetUserId = parseInt(idParam, 10);
+
+        if (isNaN(targetUserId)) {
+            return errorResponse(res, codes.BAD_REQUEST, 'A valid target user ID is required.');
+        }
+
+        const success = await unfollowUser(currentUserId, targetUserId);
+        if (!success) {
+            return errorResponse(res, codes.BAD_REQUEST, 'You are not following this user.');
+        }
+
+        return successResponse(res, codes.OK, 'Successfully unfollowed user.');
+    } catch (error: any) {
+        console.error(error);
+        return errorResponse(res, codes.BAD_REQUEST, error.message || 'An error has occurred.');
+    }
+}
+
+export async function getFollowersController(req: Request, res: Response) {
+    try {
+        const idParam = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+        const userId = parseInt(idParam, 10);
+
+        if (isNaN(userId)) {
+            return errorResponse(res, codes.BAD_REQUEST, 'A valid numeric ID is required.');
+        }
+
+        const followers = await getFollowers(userId);
+        return successResponse(res, codes.OK, 'Followers retrieved successfully.', followers);
+    } catch (error: any) {
+        console.error(error);
+        return errorResponse(res, codes.NOT_FOUND, error.message || 'An error has occurred.');
+    }
+}
+
+export async function getFollowingController(req: Request, res: Response) {
+    try {
+        const idParam = typeof req.params.id === 'string' ? req.params.id : req.params.id[0];
+        const userId = parseInt(idParam, 10);
+
+        if (isNaN(userId)) {
+            return errorResponse(res, codes.BAD_REQUEST, 'A valid numeric ID is required.');
+        }
+
+        const following = await getFollowing(userId);
+        return successResponse(res, codes.OK, 'Following list retrieved successfully.', following);
+    } catch (error: any) {
+        console.error(error);
+        return errorResponse(res, codes.NOT_FOUND, error.message || 'An error has occurred.');
     }
 }

@@ -2,7 +2,7 @@ import User from './user.ts';
 import Post from './post.ts';
 import Comment from './comment.ts';
 import Like from './like.ts';
-// import Follow from './follow.ts'
+import Follow from './follow.ts'; // Uncomment and import Follow
 
 // Setup Associations
 const setupAssociations = () => {
@@ -77,9 +77,26 @@ const setupAssociations = () => {
         foreignKey: 'commentId',
         as: 'comment',
     });
+
+    // ----------------------------------------------------
+    // 5. FOLLOWERS & FOLLOWING (Self-referential Many-to-Many)
+    // ----------------------------------------------------
+    User.belongsToMany(User, {
+        as: 'Followers',
+        through: Follow,
+        foreignKey: 'followingId',
+        otherKey: 'followerId',
+    });
+
+    User.belongsToMany(User, {
+        as: 'Following',
+        through: Follow,
+        foreignKey: 'followerId',
+        otherKey: 'followingId',
+    });
 };
 
 // Execute relationship configuration
 setupAssociations();
 
-export { User, Post, Comment, Like };
+export { User, Post, Comment, Like, Follow };

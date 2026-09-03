@@ -42,7 +42,7 @@ export const createBulkUsers = async (
     return await sequelize.transaction(async (t) => {
         const createdUsers = await User.bulkCreate(usersData, {
             transaction: t,
-            validate: true,         // Enforces model-level validations on all items
+            validate: true,        // Enforces model-level validations on all items
             individualHooks: true,  // Runs beforeCreate hooks (e.g., password hashing) on each record
         });
 
@@ -91,7 +91,9 @@ export const getAllUsers = async (options: PaginationOptions = {}): Promise<Pagi
 };
 
 export const getOneUser = async (id: number): Promise<User | null> => {
-    const user = await User.findByPk(id);
+    const user = await User.findByPk(id, {
+        attributes: { exclude: ['password'] },
+    });
     return user;
 };
 
@@ -107,7 +109,9 @@ export const updateUser = async (
         return null;
     }
 
-    return await User.findByPk(id);
+    return await User.findByPk(id, {
+        attributes: { exclude: ['password'] },
+    });
 };
 
 export const deleteUser = async (id: number): Promise<UserAttributes | null> => {
@@ -119,4 +123,86 @@ export const deleteUser = async (id: number): Promise<UserAttributes | null> => 
     const deletedUserData = user.toJSON() as UserAttributes;
     await user.destroy();
     return deletedUserData;
+};
+
+// ==========================================
+// FOLLOW / UNFOLLOW MECHANISMS
+// ==========================================
+
+export const followUser = async (currentUserId: number, targetUserId: number): Promise<boolean> => {
+    if (currentUserId === targetUserId) {
+        throw new Error("You cannot follow yourself.");
+    }
+
+    const currentUser = await User.findByPk(currentUserId);
+    const targetUser = await User.findByPk(targetUserId);
+
+    if (!currentUser || !targetUser) {
+        throw new Error("User not found.");
+    }
+
+    // Check if already following first
+    const isAlreadyFollowing = await currentUser.hasFollowing(targetUser);
+    if (isAlreadyFollowing) {
+        return false; // Already following
+    }
+
+    // addFollowing returns void, so we just await it directly without assignment
+    await currentUser.addFollowing(targetUser);
+    return true;
+};
+
+export const unfollowUser = async (currentUserId: number, targetUserId: number): Promise<boolean> => {
+    if (currentUserId === targetUserId) {
+        throw new Error("You cannot unfollow yourself.");
+    }
+
+    const currentUser = await User.findByPk(currentUserId);
+    const targetUser = await User.findByPk(targetUserId);
+
+    if (!currentUser || !targetUser) {
+        throw new Error("User not found.");
+    }
+
+    // Check if currently following first
+    const isFollowing = await currentUser.hasFollowing(targetUser);
+    if (!isFollowing) {
+        return false; // Not currently following
+    }
+
+    // removeFollowing returns void, so we just await it directly without assignment
+    await currentUser.removeFollowing(targetUser);
+    return true;
+};
+
+export const getFollowers = async (userId: number): Promise<User[]> => {
+    const user = await User.findByPk(userId, {
+        include: [{
+            model: User,
+            as: 'Followers',
+            attributes: { exclude: ['password'] },
+        }],
+    });
+
+    if (!user) {
+        throw new Error("User not found.");
+    }
+
+    return (user as any).Followers;
+};
+
+export const getFollowing = async (userId: number): Promise<User[]> => {
+    const user = await User.findByPk(userId, {
+        include: [{
+            model: User,
+            as: 'Following',
+            attributes: { exclude: ['password'] },
+        }],
+    });
+
+    if (!user) {
+        throw new Error("User not found.");
+    }
+
+    return (user as any).Following;
 };
