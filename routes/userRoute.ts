@@ -8,13 +8,17 @@ import {
     followUserController,
     unfollowUserController,
     getFollowersController,
-    getFollowingController
+    getFollowingController,
+    getCurrentUserController // <-- Import your controller for /me
 } from '../controllers/userController.ts';
 import validateUser from '../middleware/validateUser.ts';
-import { authenticate } from '../middleware/authMiddleware.ts'; // Uses your actual middleware name
+import { authenticate } from '../middleware/authMiddleware.ts';
 import express from 'express';
 
 const router = express.Router();
+
+// ✅ Add /me route here at the top
+router.get('/me', authenticate, getCurrentUserController);
 
 router.post('/create', validateUser, createUserController);
 router.post('/bulk', validateUser, createBulkUserController);

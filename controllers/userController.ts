@@ -1,4 +1,4 @@
-import type { Request, Response } from 'express';
+import type { Request, Response, NextFunction } from 'express';
 import codes from '../utils/statusCodes.ts';
 import { errorResponse, successResponse } from '../utils/responses.ts';
 import {
@@ -11,7 +11,8 @@ import {
     followUser,
     unfollowUser,
     getFollowers,      // Changed from getUserFollowers
-    getFollowing,      // Changed from getUserFollowing
+    getFollowing,
+    getCurrentUserService
 } from '../services/userService.ts';
 
 // Extend Express Request to handle custom middleware data like req.normalizedData or user info
@@ -250,3 +251,26 @@ export async function getFollowingController(req: Request, res: Response) {
         return errorResponse(res, codes.NOT_FOUND, error.message || 'An error has occurred.');
     }
 }
+
+export const getCurrentUserController = async (req: Request, res: Response, next: NextFunction): Promise<any> => {
+    try {
+        // Adjust req.user.id or req.user.userId depending on what your 'authenticate' middleware attaches
+        const userId = (req as any).user?.id || (req as any).user?.userId;
+
+        if (!userId) {
+            return res.status(401).json({
+                status: 'error',
+                message: 'Unauthorized: No user session found'
+            });
+        }
+
+        const user = await getCurrentUserService(userId);
+
+        return res.status(200).json({
+            status: 'success',
+            data: user
+        });
+    } catch (error: any) {
+        next(error);
+    }
+};

@@ -58,6 +58,15 @@ export const createPostService = async (
         userId
     });
 
+    // --- DEBUG LOGGING: remove once the bug is found ---
+    console.log('[createPostService] Post.create() resolved with:', {
+        id: post.id,
+        idType: typeof post.id,
+        isNewRecord: post.isNewRecord,
+        raw: post.toJSON(),
+    });
+    // -----------------------------------------------------
+
     const postWithDetails = await getPostByIdService(post.id);
     return postWithDetails;
 };
@@ -184,4 +193,29 @@ export const deletePostService = async (id: number) => {
     await post.destroy();
 
     return postData;
+};
+
+export const fetchUserPostsFromDb = async (userId: string | number) => {
+    const posts = await Post.findAll({
+        where: { userId },
+        include: [
+            {
+                model: Comment,
+                as: 'comments', // Change alias if your association uses a different name
+                include: [
+                    {
+                        model: User,
+                        as: 'user', // Change alias if your association uses a different name
+                        attributes: ['id', 'username', 'firstName', 'lastName']
+                    }
+                ]
+            },
+            {
+                model: Like,
+                as: 'likes' // Change alias if your association uses a different name
+            }
+        ],
+        order: [['createdAt', 'DESC']]
+    });
+    return posts;
 };

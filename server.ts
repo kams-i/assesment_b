@@ -1,5 +1,7 @@
 import express from 'express';
+import http from 'http';
 import { sequelize } from './config/database.ts';
+import { initSocket } from './config/socket.ts';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import errors from './middleware/errorhandler.ts';
@@ -10,7 +12,8 @@ import authRoute from './routes/authRoute.ts';
 import adminRoute from './routes/adminRoute.ts';
 import uploadRoute from './routes/uploadRoute.ts';
 import postRoute from './routes/postRoute.ts';
-import likeRoute from './routes/likeRoute.ts'
+import likeRoute from './routes/likeRoute.ts';
+import messageRoute from './routes/messageRoute.ts';
 
 dotenv.config();
 const app = express();
@@ -33,7 +36,8 @@ app.use('/api/v4/auth', authRoute);
 app.use('/api/v4/admin', adminRoute);
 app.use('/api/v4/upload', uploadRoute);
 app.use('/api/v4/post', postRoute);
-app.use('/api/v4/like', likeRoute)
+app.use('/api/v4/like', likeRoute);
+app.use('/api/v4/message', messageRoute);
 
 // 2. Fallback & Error Handlers MUST go LAST (after all valid routes)
 app.use(notFound);
@@ -45,9 +49,12 @@ const runServer = async () => {
         console.log('Database connected successfully');
 
         await sequelize.sync({ alter: true });
-        console.log(' Models synchronized with database');
+        console.log('Models synchronized with database');
 
-        const server = app.listen(port, () => {
+        const server = http.createServer(app);
+        initSocket(server);
+
+        server.listen(port, () => {
             console.log(`This project is running at ${port}`);
         });
 

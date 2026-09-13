@@ -1,4 +1,7 @@
-import User from "../models/user.ts";
+import User from '../models/user.ts';     // Adjust filename if your User model file is named differently
+import Post from '../models/post.ts';     // Adjust to your actual post model file name
+import Comment from '../models/comment.ts'; // Adjust to your actual comment model file name
+import Like from '../models/like.ts';
 import type { UserCreationAttributes, UserAttributes } from "../models/user.ts";
 import { sequelize } from "../config/database.ts";
 
@@ -90,9 +93,33 @@ export const getAllUsers = async (options: PaginationOptions = {}): Promise<Pagi
     };
 };
 
-export const getOneUser = async (id: number): Promise<User | null> => {
+export const getOneUser = async (id: number | string): Promise<User | null> => {
     const user = await User.findByPk(id, {
         attributes: { exclude: ['password'] },
+        include: [
+            {
+                model: Post,
+                as: 'posts',
+                include: [
+                    {
+                        model: Comment,
+                        as: 'comments',
+                        include: [
+                            {
+                                model: User,
+                                as: 'user',
+                                attributes: ['id', 'firstName', 'lastName', 'username'] // Removed 'avatar' since the column doesn't exist in the database table
+                            }
+                        ]
+                    },
+                    {
+                        model: Like,
+                        as: 'likes'
+                    }
+                ]
+            }
+        ],
+        order: [[{ model: Post, as: 'posts' }, 'createdAt', 'DESC']]
     });
     return user;
 };
@@ -205,4 +232,16 @@ export const getFollowing = async (userId: number): Promise<User[]> => {
     }
 
     return (user as any).Following;
+};
+
+export const getCurrentUserService = async (userId: number | string) => {
+    const user = await User.findByPk(userId, {
+        attributes: { exclude: ['password'] } // Exclude sensitive fields
+    });
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    return user;
 };

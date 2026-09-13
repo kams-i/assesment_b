@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { createPost, getPosts, getPostById, deletePost } from '../controllers/postController.ts';
+import { createPost, getPosts, getPostById, deletePost, getUserPosts, getUserPostsController } from '../controllers/postController.ts';
 import { createComment, getCommentsByPost, deleteComment } from '../controllers/commentController.ts';
 import { authenticate } from '../middleware/authMiddleware.ts';
 import upload from '../services/uploadService.ts';
@@ -19,6 +19,14 @@ router.post(
 
 // Get all posts
 router.get('/all', getPosts);
+
+// Get posts belonging specifically to the logged-in user 
+// (MUST be placed before router.get('/:id', ...))
+router.get('/user/posts', authenticate, getUserPosts);
+
+// Add this route to your backend posts router
+// (Place it BEFORE router.get('/:id', getPostById) to prevent Express from treating 'user' as an ID)
+router.get('/user/:id', getUserPostsController);
 
 // Get single post by ID
 router.get('/:id', getPostById);
