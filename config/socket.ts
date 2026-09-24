@@ -1,6 +1,6 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import { MessageService } from '../services/messageService.ts';
+import { MessageService } from '../services/messageService.ts'; // Restored .ts extension for ES Modules resolution
 
 export function initSocket(server: HttpServer): SocketIOServer {
     const io = new SocketIOServer(server, {
@@ -37,6 +37,11 @@ export function initSocket(server: HttpServer): SocketIOServer {
                 socket.emit('message_sent', savedMessage);
             } catch (error) {
                 console.error('Failed to save or send message via socket:', error);
+                
+                // Notify the sender that the message failed to send
+                socket.emit('message_error', { 
+                    error: 'Failed to send message. Please try again.' 
+                });
             }
         });
 
