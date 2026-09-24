@@ -1,7 +1,7 @@
 // routes/likeRoutes.ts
 import { Router } from 'express';
-import { toggleLike, getUserLikes } from '../controllers/likeController.ts';
-import { authenticate } from '../middleware/authMiddleware.ts';
+import { toggleLike, getUserLikes } from '../controllers/likeController';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
 

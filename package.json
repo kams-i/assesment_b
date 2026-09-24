@@ -16,7 +16,8 @@
   "main": "server.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node --watch server.ts"
+    "start": "tsx server.ts",
+    "dev": "tsx watch server.ts"
   },
   "dependencies": {
     "accepts": "^2.0.0",
@@ -155,7 +156,10 @@
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/multer": "^2.2.0",
+    "@types/node": "^26.6.2",
     "@types/nodemailer": "^8.0.1",
-    "@types/streamifier": "^0.1.2"
+    "@types/streamifier": "^0.1.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2"
   }
 }

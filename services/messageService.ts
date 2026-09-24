@@ -1,6 +1,6 @@
 // services/messageService.ts
-import { Message, User } from '../models/index.ts';
-import codes from '../utils/statusCodes.ts';
+import { Message, User } from '../models/index';
+import codes from '../utils/statusCodes';
 import { Op } from 'sequelize';
 
 export const sendMessageService = async (

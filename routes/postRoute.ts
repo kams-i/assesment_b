@@ -1,8 +1,8 @@
 import { Router } from 'express';
-import { createPost, getPosts, getPostById, deletePost, getUserPosts, getUserPostsController } from '../controllers/postController.ts';
-import { createComment, getCommentsByPost, deleteComment } from '../controllers/commentController.ts';
-import { authenticate } from '../middleware/authMiddleware.ts';
-import upload from '../services/uploadService.ts';
+import { createPost, getPosts, getPostById, deletePost, getUserPosts, getUserPostsController } from '../controllers/postController';
+import { createComment, getCommentsByPost, deleteComment } from '../controllers/commentController';
+import { authenticate } from '../middleware/authMiddleware';
+import upload from '../services/uploadService';
 
 const router = Router();
 

@@ -1,6 +1,6 @@
 import type { Request, Response, NextFunction } from "express";
-import codes from "../utils/statusCodes.ts";
-import { errorResponse } from "../utils/responses.ts";
+import codes from "../utils/statusCodes";
+import { errorResponse } from "../utils/responses";
 
 // Extend the base Error type to include optional properties assigned to custom errors
 interface CustomError extends Error {
