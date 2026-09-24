@@ -17,7 +17,7 @@ import messageRoute from './routes/messageRoute';
 
 dotenv.config();
 const app = express();
-const port = process.env.PORT || 8000;
+const port = Number(process.env.PORT) || 8000;
 
 app.use(express.json());
 app.use(logger);
@@ -54,8 +54,8 @@ const runServer = async () => {
         const server = http.createServer(app);
         initSocket(server);
 
-        server.listen(port, () => {
-            console.log(`This project is running at ${port}`);
+        server.listen(port, '0.0.0.0', () => {
+            console.log(`This project is running at port ${port}`);
         });
 
         // Increase timeout to 5 minutes (300,000 ms) for video uploads
