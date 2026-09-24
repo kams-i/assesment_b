@@ -1,6 +1,6 @@
 import { Server as SocketIOServer } from 'socket.io';
 import { Server as HttpServer } from 'http';
-import { MessageService } from '../services/messageService.ts'; // Restored .ts extension for ES Modules resolution
+import { MessageService } from '../services/messageService'; // Restored .ts extension for ES Modules resolution
 
 export function initSocket(server: HttpServer): SocketIOServer {
     const io = new SocketIOServer(server, {

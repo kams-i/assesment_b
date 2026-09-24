@@ -10,9 +10,9 @@ import {
     getFollowersController,
     getFollowingController,
     getCurrentUserController // <-- Import your controller for /me
-} from '../controllers/userController.ts';
-import validateUser from '../middleware/validateUser.ts';
-import { authenticate } from '../middleware/authMiddleware.ts';
+} from '../controllers/userController';
+import validateUser from '../middleware/validateUser';
+import { authenticate } from '../middleware/authMiddleware';
 import express from 'express';
 
 const router = express.Router();

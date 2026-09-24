@@ -7,9 +7,9 @@ import {
     deleteMessageService,
     getConversationContactsService,
     getAllUsersService
-} from '../services/messageService.ts';
-import { successResponse, errorResponse } from '../utils/responses.ts';
-import codes from '../utils/statusCodes.ts';
+} from '../services/messageService';
+import { successResponse, errorResponse } from '../utils/responses';
+import codes from '../utils/statusCodes';
 
 export const sendMessage = async (req: AuthenticatedRequest, res: Response): Promise<Response | void> => {
     try {

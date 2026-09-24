@@ -6,8 +6,8 @@ import {
     deleteMessage, 
     getContacts, 
     getAllUsers 
-} from '../controllers/messageController.ts';
-import { authenticate } from '../middleware/authMiddleware.ts';
+} from '../controllers/messageController';
+import { authenticate } from '../middleware/authMiddleware';
 
 const router = Router();
 
