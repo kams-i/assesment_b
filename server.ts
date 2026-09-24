@@ -4,7 +4,7 @@ import { sequelize } from './config/database';
 import { initSocket } from './config/socket';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import errors from './middleware/errorhandler';
+import errors from './middleware/errorHandler';
 import logger from './middleware/logger';
 import notFound from './middleware/notFound';
 import userRoute from './routes/userRoute';
