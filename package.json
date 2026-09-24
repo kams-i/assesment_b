@@ -129,6 +129,7 @@
     "side-channel-list": "^1.0.1",
     "side-channel-map": "^1.0.1",
     "side-channel-weakmap": "^1.0.2",
+    "socket.io": "^4.8.3",
     "split2": "^4.2.0",
     "statuses": "^2.0.2",
     "streamifier": "^0.1.1",

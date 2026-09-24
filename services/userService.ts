@@ -1,4 +1,7 @@
-import User from "../models/user.ts";
+import User from '../models/user.ts';     // Adjust filename if your User model file is named differently
+import Post from '../models/post.ts';     // Adjust to your actual post model file name
+import Comment from '../models/comment.ts'; // Adjust to your actual comment model file name
+import Like from '../models/like.ts';
 import type { UserCreationAttributes, UserAttributes } from "../models/user.ts";
 import { sequelize } from "../config/database.ts";
 
@@ -42,7 +45,7 @@ export const createBulkUsers = async (
     return await sequelize.transaction(async (t) => {
         const createdUsers = await User.bulkCreate(usersData, {
             transaction: t,
-            validate: true,         // Enforces model-level validations on all items
+            validate: true,        // Enforces model-level validations on all items
             individualHooks: true,  // Runs beforeCreate hooks (e.g., password hashing) on each record
         });
 
@@ -90,8 +93,34 @@ export const getAllUsers = async (options: PaginationOptions = {}): Promise<Pagi
     };
 };
 
-export const getOneUser = async (id: number): Promise<User | null> => {
-    const user = await User.findByPk(id);
+export const getOneUser = async (id: number | string): Promise<User | null> => {
+    const user = await User.findByPk(id, {
+        attributes: { exclude: ['password'] },
+        include: [
+            {
+                model: Post,
+                as: 'posts',
+                include: [
+                    {
+                        model: Comment,
+                        as: 'comments',
+                        include: [
+                            {
+                                model: User,
+                                as: 'user',
+                                attributes: ['id', 'firstName', 'lastName', 'username'] // Removed 'avatar' since the column doesn't exist in the database table
+                            }
+                        ]
+                    },
+                    {
+                        model: Like,
+                        as: 'likes'
+                    }
+                ]
+            }
+        ],
+        order: [[{ model: Post, as: 'posts' }, 'createdAt', 'DESC']]
+    });
     return user;
 };
 
@@ -107,7 +136,9 @@ export const updateUser = async (
         return null;
     }
 
-    return await User.findByPk(id);
+    return await User.findByPk(id, {
+        attributes: { exclude: ['password'] },
+    });
 };
 
 export const deleteUser = async (id: number): Promise<UserAttributes | null> => {
@@ -119,4 +150,98 @@ export const deleteUser = async (id: number): Promise<UserAttributes | null> => 
     const deletedUserData = user.toJSON() as UserAttributes;
     await user.destroy();
     return deletedUserData;
+};
+
+// ==========================================
+// FOLLOW / UNFOLLOW MECHANISMS
+// ==========================================
+
+export const followUser = async (currentUserId: number, targetUserId: number): Promise<boolean> => {
+    if (currentUserId === targetUserId) {
+        throw new Error("You cannot follow yourself.");
+    }
+
+    const currentUser = await User.findByPk(currentUserId);
+    const targetUser = await User.findByPk(targetUserId);
+
+    if (!currentUser || !targetUser) {
+        throw new Error("User not found.");
+    }
+
+    // Check if already following first
+    const isAlreadyFollowing = await currentUser.hasFollowing(targetUser);
+    if (isAlreadyFollowing) {
+        return false; // Already following
+    }
+
+    // addFollowing returns void, so we just await it directly without assignment
+    await currentUser.addFollowing(targetUser);
+    return true;
+};
+
+export const unfollowUser = async (currentUserId: number, targetUserId: number): Promise<boolean> => {
+    if (currentUserId === targetUserId) {
+        throw new Error("You cannot unfollow yourself.");
+    }
+
+    const currentUser = await User.findByPk(currentUserId);
+    const targetUser = await User.findByPk(targetUserId);
+
+    if (!currentUser || !targetUser) {
+        throw new Error("User not found.");
+    }
+
+    // Check if currently following first
+    const isFollowing = await currentUser.hasFollowing(targetUser);
+    if (!isFollowing) {
+        return false; // Not currently following
+    }
+
+    // removeFollowing returns void, so we just await it directly without assignment
+    await currentUser.removeFollowing(targetUser);
+    return true;
+};
+
+export const getFollowers = async (userId: number): Promise<User[]> => {
+    const user = await User.findByPk(userId, {
+        include: [{
+            model: User,
+            as: 'Followers',
+            attributes: { exclude: ['password'] },
+        }],
+    });
+
+    if (!user) {
+        throw new Error("User not found.");
+    }
+
+    return (user as any).Followers;
+};
+
+export const getFollowing = async (userId: number): Promise<User[]> => {
+    const user = await User.findByPk(userId, {
+        include: [{
+            model: User,
+            as: 'Following',
+            attributes: { exclude: ['password'] },
+        }],
+    });
+
+    if (!user) {
+        throw new Error("User not found.");
+    }
+
+    return (user as any).Following;
+};
+
+export const getCurrentUserService = async (userId: number | string) => {
+    const user = await User.findByPk(userId, {
+        attributes: { exclude: ['password'] } // Exclude sensitive fields
+    });
+
+    if (!user) {
+        throw new Error('User not found');
+    }
+
+    return user;
 };

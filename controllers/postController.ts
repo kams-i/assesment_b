@@ -3,10 +3,12 @@ import {
     createPostService, 
     getPostsService, 
     getPostByIdService, 
-    deletePostService 
+    deletePostService,
+    fetchUserPostsFromDb 
 } from '../services/postService.ts';
 import { errorResponse, successResponse } from '../utils/responses.ts';
 import codes from '../utils/statusCodes.ts';
+import { Post } from '../models/index.ts';
 
 interface AuthenticatedRequest extends Request {
     user?: {
@@ -76,5 +78,49 @@ export const deletePost = async (req: Request, res: Response): Promise<Response 
         const statusCode = error.statusCode || codes.INTERNAL_SERVER_ERROR;
         const message = error.message || 'An error has occurred.';
         return errorResponse(res, statusCode, message);
+    }
+};
+
+export const getUserPosts = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        // Cast req as any to access custom user properties attached by middleware
+        const authReq = req as any;
+        const userId = authReq.user?.id || authReq.user?.userId || authReq.user?._id;
+
+        if (!userId) {
+            return res.status(401).json({ success: false, message: "Unauthorized user" });
+        }
+
+        const posts = await fetchUserPostsFromDb(userId);
+
+        return res.status(200).json({
+            success: true,
+            count: posts.length,
+            posts,
+        });
+    } catch (error: any) {
+        return res.status(500).json({
+            success: false,
+            message: error.message || "Internal server error",
+        });
+    }
+};
+
+export const getUserPostsController = async (req: Request, res: Response) => {
+    try {
+        const userId = req.params.id || (req as any).user?.id;
+
+        if (!userId) {
+            return res.status(400).json({ message: "User ID is required" });
+        }
+
+        const posts = await Post.findAll({
+            where: { userId: userId }, // Change 'userId' to 'author' if your foreign key column is named author
+            order: [['createdAt', 'DESC']]
+        });
+
+        return res.status(200).json({ data: posts });
+    } catch (error: any) {
+        return res.status(500).json({ message: error.message });
     }
 };

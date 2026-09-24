@@ -34,15 +34,15 @@ export class Post
   extends Model<PostAttributes, PostCreationAttributes>
   implements PostAttributes
 {
-  public id!: number;
-  public title!: string;
-  public content!: string;
-  public userId!: number;
-  public images!: string[];
-  public videos!: string[];
+  declare id: number;
+  declare title: string;
+  declare content: string;
+  declare userId: number;
+  declare images: string[];
+  declare videos: string[];
 
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   // Relation properties populated on eager loading
   public user?: NonAttribute<User>;
@@ -51,9 +51,9 @@ export class Post
   public likesCount?: NonAttribute<number>;
 
   // Optional Sequelize mixins for instance autocompletion
-  public getComments!: HasManyGetAssociationsMixin<Comment>;
-  public addComment!: HasManyAddAssociationMixin<Comment, number>;
-  public getLikes!: HasManyGetAssociationsMixin<Like>;
+  declare getComments: HasManyGetAssociationsMixin<Comment>;
+  declare addComment: HasManyAddAssociationMixin<Comment, number>;
+  declare getLikes: HasManyGetAssociationsMixin<Like>;
 }
 
 Post.init(

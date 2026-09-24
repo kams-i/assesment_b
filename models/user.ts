@@ -12,6 +12,7 @@ export interface UserAttributes {
     lastName: string;
     age: number;
     password: string;
+    bio: string | null;
     role: 'admin' | 'user';
     otpCode?: string | null;
     otpExpiresAt?: Date | null;
@@ -20,7 +21,7 @@ export interface UserAttributes {
 }
 
 // 2. Attributes optional when calling User.create()
-export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'otpCode' | 'otpExpiresAt'> { }
+export interface UserCreationAttributes extends Optional<UserAttributes, 'id' | 'role' | 'otpCode' | 'otpExpiresAt' | 'bio'> { }
 
 // 3. Model class definition
 export class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -34,9 +35,21 @@ export class User extends Model<UserAttributes, UserCreationAttributes> implemen
     public declare role: 'admin' | 'user';
     public declare otpCode: string | null;
     public declare otpExpiresAt: Date | null;
+    public declare bio: string | null;
 
     public declare readonly createdAt: Date;
     public declare readonly updatedAt: Date;
+
+    // TypeScript declarations for Sequelize association mixins
+    public declare getFollowers: () => Promise<User[]>;
+    public declare addFollower: (user: User | number) => Promise<void>;
+    public declare removeFollower: (user: User | number) => Promise<void>;
+    public declare hasFollower: (user: User | number) => Promise<boolean>;
+
+    public declare getFollowing: () => Promise<User[]>;
+    public declare addFollowing: (user: User | number) => Promise<void>;
+    public declare removeFollowing: (user: User | number) => Promise<void>;
+    public declare hasFollowing: (user: User | number) => Promise<boolean>;
 
     // Instance method to check passwords during login
     public async matchPassword(enteredPassword: string): Promise<boolean> {
@@ -94,6 +107,10 @@ User.init(
         password: {
             type: DataTypes.STRING,
             allowNull: false,
+        },
+        bio: {
+            type: DataTypes.STRING,
+            allowNull: true,
         },
         role: {
             type: DataTypes.ENUM('admin', 'user'),
